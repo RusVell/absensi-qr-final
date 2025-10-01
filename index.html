@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Absensi QR Code</title>
+  <title>Absensi PENSI</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     /* Mengatur dasar halaman */
@@ -11,39 +11,38 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #fff5e1 0%, #ffc978 100%);
     }
 
-    /* Membuat container utama selalu di tengah layar (horizontal & vertikal) */
     body {
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* Kotak konten utama yang responsif */
     .container {
-      background: #fff;
+      background: #ffffff;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       padding: 30px;
-      width: 90%; /* Lebar 90% dari layar */
-      max-width: 450px; /* Lebar maksimal 450px di layar besar */
+      width: 90%;
+      max-width: 450px;
       text-align: center;
-      box-sizing: border-box; /* Agar padding tidak menambah lebar */
+      box-sizing: border-box;
     }
 
     h1 {
       margin-top: 0;
-      font-size: 24px;
-      color: #333;
+      font-size: 26px;
+      font-weight: 700;
+      color: #d95e1e;
     }
 
     #reader {
       width: 100%;
       margin: 20px auto;
-      border: 2px solid #eee;
+      border: 2px solid #f0f0f0;
       border-radius: 12px;
       overflow: hidden;
     }
@@ -55,9 +54,9 @@
       font-size: 16px;
       margin-bottom: 20px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       box-sizing: border-box;
-      outline-color: #007bff;
+      outline-color: #f57c00;
     }
 
     label {
@@ -66,7 +65,7 @@
       margin-bottom: 8px;
       text-align: left;
       font-weight: bold;
-      color: #555;
+      color: #6D4C41;
     }
 
     /* === GAYA UNTUK POP-UP (MODAL) === */
@@ -77,10 +76,11 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.6);
-      display: none; /* Sembunyi secara default */
+      display: none;
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      backdrop-filter: blur(5px);
     }
 
     .modal-content {
@@ -91,51 +91,63 @@
       width: 80%;
       max-width: 350px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      border-top: 8px solid; /* Garis warna status */
+      border-top: 8px solid #f57c00; /* Warna default oranye */
     }
 
-    /* Styling untuk status sukses */
-    .modal-content.success {
-      border-color: #28a745;
-    }
-     .modal-content.success #modal-message {
-      color: #28a745;
-    }
-
-    /* Styling untuk status error */
-    .modal-content.error {
-      border-color: #dc3545;
-    }
-    .modal-content.error #modal-message {
-      color: #dc3545;
-    }
+    .modal-content.success { border-color: #4CAF50; }
+    .modal-content.success #modal-message { color: #4CAF50; }
+    .modal-content.error { border-color: #D32F2F; }
+    .modal-content.error #modal-message { color: #D32F2F; }
 
     #modal-message {
       font-size: 18px;
       font-weight: bold;
-      margin: 0 0 20px 0;
+      margin: 0 0 25px 0;
+      color: #333;
+    }
+    #modal-message .scanned-name {
+      color: #d95e1e;
+      display: block;
+      font-size: 22px;
+      margin-top: 8px;
     }
 
-    #modal-close-btn {
+    #modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    #modal-actions button {
       padding: 12px 25px;
       border: none;
-      background: #007bff;
-      color: white;
       border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    #modal-close-btn:hover {
-      background: #0056b3;
+      transition: all 0.2s;
+      font-weight: bold;
     }
 
+    .btn-primary {
+      background: #f57c00;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #d95e1e;
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #bdbdbd;
+    }
   </style>
 </head>
 <body>
-  <!-- Konten Utama -->
   <div class="container">
-    <h1>Absensi QR Code</h1>
+    <h1>Absensi PENSI</h1>
     <label for="sesi">Pilih Sesi:</label>
     <select id="sesi">
       <option value="Registrasi">Registrasi</option>
@@ -148,70 +160,103 @@
     <div id="reader"></div>
   </div>
 
-  <!-- Pop-up (Modal) untuk notifikasi -->
   <div id="modal" class="modal-overlay">
     <div class="modal-content">
       <p id="modal-message"></p>
-      <button id="modal-close-btn">Lanjut Scan</button>
+      <div id="modal-actions"></div>
     </div>
   </div>
 
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbzNDnDyhJWyqa3Vsxdg74QQ4YwqFjDGKRSpKEsx4xt-nrwC_SDkoni5h19KbzbihpPR_A/exec";
     
-    // Ambil elemen-elemen modal
     const modal = document.getElementById('modal');
     const modalMessage = document.getElementById('modal-message');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const modalActions = document.getElementById('modal-actions');
     const modalContent = modal.querySelector('.modal-content');
 
-    // Fungsi untuk menampilkan pop-up
-    function showModal(message, status) {
-      modalMessage.textContent = message;
-      // Hapus class sebelumnya, lalu tambahkan class baru (success/error)
-      modalContent.className = 'modal-content';
-      modalContent.classList.add(status); // status bisa 'success' atau 'error'
-      modal.style.display = 'flex';
+    // Sembunyikan modal dan lanjutkan scan
+    function hideModalAndResume() {
+      modal.style.display = 'none';
+      if (html5QrCode.getState() === 2) { // 2 = PAUSED
+         html5QrCode.resume();
+      }
     }
     
-    // Fungsi untuk menyembunyikan pop-up dan melanjutkan scan
-    function hideModal() {
-      modal.style.display = 'none';
-      html5QrCode.resume(); // Lanjutkan pemindaian
+    // Tampilkan modal hasil akhir (sukses/gagal)
+    function showResultModal(message, status) {
+        modalMessage.innerHTML = message;
+        modalContent.className = 'modal-content ' + status;
+        
+        modalActions.innerHTML = ''; // Kosongkan tombol sebelumnya
+        const continueBtn = document.createElement('button');
+        continueBtn.textContent = 'Lanjut Scan';
+        continueBtn.className = 'btn-primary';
+        continueBtn.onclick = hideModalAndResume;
+        modalActions.appendChild(continueBtn);
+
+        modal.style.display = 'flex';
     }
 
-    // Tambahkan event listener untuk tombol tutup di pop-up
-    modalCloseBtn.addEventListener('click', hideModal);
+    // Tampilkan modal konfirmasi setelah scan
+    function showConfirmationModal(nama) {
+        modalMessage.innerHTML = `Absen untuk <span class="scanned-name">${nama}</span>?`;
+        modalContent.className = 'modal-content'; // Reset warna border
 
+        modalActions.innerHTML = ''; // Kosongkan tombol
+
+        // Buat tombol Batal
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Batal';
+        cancelBtn.className = 'btn-secondary';
+        cancelBtn.onclick = hideModalAndResume;
+
+        // Buat tombol Simpan
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Simpan';
+        saveBtn.className = 'btn-primary';
+        saveBtn.onclick = () => {
+            const sesi = document.getElementById("sesi").value;
+            sendToAPI(nama, sesi);
+        };
+
+        modalActions.appendChild(cancelBtn);
+        modalActions.appendChild(saveBtn);
+        modal.style.display = 'flex';
+    }
+
+    // Kirim data ke Google Sheets API
     function sendToAPI(nama, sesi) {
-      // Tampilkan pop-up loading
-      showModal('Mengirim data...', 'loading');
+      // Tampilkan status loading di modal
+      modalMessage.textContent = 'Menyimpan data...';
+      modalActions.innerHTML = ''; // Hilangkan tombol saat loading
 
-      const data = {
-        nama: nama,
-        sesi: sesi,
-      };
+      const data = { nama: nama, sesi: sesi };
 
       fetch(apiUrl, {
         method: "POST",
         body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8",
-        }
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
       })
       .then(res => res.json())
       .then(res => {
-        showModal(res.message, res.status); // Tampilkan hasil dari API di pop-up
+        showResultModal(res.message, res.status);
       })
       .catch(err => {
-        showModal("❌ Terjadi kesalahan: " + err, 'error'); // Tampilkan error di pop-up
+        showResultModal("❌ Terjadi kesalahan jaringan: " + err, 'error');
       });
     }
 
+    // Fungsi yang dijalankan saat QR berhasil di-scan
     function onScanSuccess(decodedText, decodedResult) {
-      html5QrCode.pause(); // Jeda pemindaian agar tidak double scan
-      const sesi = document.getElementById("sesi").value;
-      sendToAPI(decodedText, sesi);
+      html5QrCode.pause(); // Langsung jeda kamera
+      showConfirmationModal(decodedText);
+    }
+    
+    // Fungsi yang dijalankan jika scan gagal (misal QR tidak valid)
+    function onScanFailure(error) {
+        // Fungsi ini bisa di-trigger berkali-kali, jadi kita tidak menampilkannya agar tidak spam
+        // console.warn(`Code scan error = ${error}`);
     }
 
     const html5QrCode = new Html5Qrcode("reader");
@@ -221,11 +266,10 @@
         fps: 10,
         qrbox: { width: 250, height: 250 }
       },
-      onScanSuccess
+      onScanSuccess,
+      onScanFailure
     ).catch(err => {
-      console.error("Gagal memulai kamera:", err);
-      // Tampilkan error di pop-up jika kamera gagal diakses
-      showModal("Gagal memulai kamera. Pastikan izin sudah diberikan.", "error");
+        showResultModal("Gagal memulai kamera. Mohon berikan izin akses kamera.", "error");
     });
   </script>
 </body>
