@@ -87,39 +87,58 @@
     <div id="reader"></div>
     <div id="result"></div>
   </div>
-
-  <script>
+ <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbzNDnDyhJWyqa3Vsxdg74QQ4YwqFjDGKRSpKEsx4xt-nrwC_SDkoni5h19KbzbihpPR_A/exec";
+    const resultDiv = document.getElementById("result");
 
     function sendToAPI(nama, sesi) {
-      const now = new Date();
+      // Tampilkan pesan "mengirim"
+      resultDiv.className = ""; // Hapus class success/error sebelumnya
+      resultDiv.innerText = "Mengirim data...";
+
       const data = {
         nama: nama,
         sesi: sesi,
-        tanggal: now.toLocaleDateString(),
-        waktu: now.toLocaleTimeString()
       };
 
       fetch(apiUrl, {
         method: "POST",
+        // mode: 'no-cors', // Hapus atau jadikan komentar jika tidak diperlukan
         body: JSON.stringify(data),
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "text/plain;charset=utf-8", // Ganti ke text/plain agar tidak ada preflight request
         }
       })
       .then(res => res.json())
       .then(res => {
-        alert("✅ Presensi berhasil: " + JSON.stringify(res));
+        // Tampilkan pesan dari API
+        resultDiv.innerText = res.message;
+        if (res.status === "success") {
+          resultDiv.className = "success";
+        } else {
+          resultDiv.className = "error";
+        }
       })
       .catch(err => {
-        alert("❌ Gagal kirim: " + err);
+        resultDiv.innerText = "❌ Terjadi kesalahan: " + err;
+        resultDiv.className = "error";
       });
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-      document.getElementById("result").innerText = `Hasil Scan: ${decodedText}`;
+      // Jangan tampilkan hasil scan mentah di sini agar tidak tertimpa pesan status
+      // resultDiv.innerText = `Hasil Scan: ${decodedText}`; 
+      
       const sesi = document.getElementById("sesi").value;
       sendToAPI(decodedText, sesi);
+
+      // Hentikan scan sejenak agar tidak double scan
+      html5QrCode.pause();
+      setTimeout(() => {
+        html5QrCode.resume();
+        resultDiv.innerText = ''; // Kosongkan pesan setelah beberapa detik
+        resultDiv.className = '';
+      }, 3000); // Jeda 3 detik
     }
 
     const html5QrCode = new Html5Qrcode("reader");
@@ -127,12 +146,15 @@
       { facingMode: "environment" },
       {
         fps: 10,
-        qrbox: 250
+        qrbox: { width: 250, height: 250 } // Lebih baik gunakan object untuk qrbox
       },
       onScanSuccess
     ).catch(err => {
-      console.error("Camera start error:", err);
+      console.error("Gagal memulai kamera:", err);
+      resultDiv.innerText = "Gagal memulai kamera. Pastikan izin sudah diberikan.";
+      resultDiv.className = "error";
     });
   </script>
 </body>
 </html>
+
