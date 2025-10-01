@@ -78,9 +78,9 @@
     <select id="sesi">
       <option value="Registrasi">Registrasi</option>
       <option value="Sesi 1">Sesi 1</option>
-      <option value="Laurentius">Laurentius</option>
+      <option value="Sesi 2">Laurentius</option>
       <option value="Sesi 3">Sesi 3</option>
-      <option value="Makrab">Makrab</option>
+      <option value="Sesi 4">Makrab</option>
       <option value="Sesi 5">Sesi 5</option>
     </select>
 
@@ -89,7 +89,6 @@
   </div>
 
   <script>
-    // API baru Google Apps Script
     const scriptURL = "https://script.google.com/macros/s/AKfycbzNDnDyhJWyqa3Vsxdg74QQ4YwqFjDGKRSpKEsx4xt-nrwC_SDkoni5h19KbzbihpPR_A/exec";
 
     function onScanSuccess(decodedText) {
@@ -98,7 +97,7 @@
       fetch(scriptURL, {
         method: "POST",
         body: JSON.stringify({
-          id_peserta: decodedText,
+          nama: decodedText,   // langsung isi nama
           sesi: sesi
         }),
         headers: {
@@ -109,7 +108,7 @@
       .then(data => {
         const resultDiv = document.getElementById("result");
         resultDiv.innerText = data.message;
-        if (data.message.includes("berhasil")) {
+        if (data.status === "success") {
           resultDiv.className = "success";
         } else {
           resultDiv.className = "error";
