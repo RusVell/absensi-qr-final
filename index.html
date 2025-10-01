@@ -1,79 +1,141 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Absensi QR Code</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    /* Mengatur dasar halaman */
+    html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    /* Membuat container utama selalu di tengah layar (horizontal & vertikal) */
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
     }
 
+    /* Kotak konten utama yang responsif */
     .container {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       padding: 30px;
-      max-width: 400px;
-      width: 90%;
+      width: 90%; /* Lebar 90% dari layar */
+      max-width: 450px; /* Lebar maksimal 450px di layar besar */
       text-align: center;
+      box-sizing: border-box; /* Agar padding tidak menambah lebar */
     }
 
     h1 {
       margin-top: 0;
       font-size: 24px;
-      color: #ff6600;
+      color: #333;
     }
 
     #reader {
       width: 100%;
       margin: 20px auto;
-      border: 2px solid #ddd;
+      border: 2px solid #eee;
       border-radius: 12px;
       overflow: hidden;
     }
 
-    select {
-      padding: 10px;
+    select, label {
+      display: block;
       width: 100%;
+      padding: 12px;
       font-size: 16px;
       margin-bottom: 20px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      outline: none;
+      box-sizing: border-box;
+      outline-color: #007bff;
     }
 
-    #result {
-      margin-top: 15px;
+    label {
+      border: none;
+      padding: 0;
+      margin-bottom: 8px;
+      text-align: left;
       font-weight: bold;
-      padding: 10px;
+      color: #555;
+    }
+
+    /* === GAYA UNTUK POP-UP (MODAL) === */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none; /* Sembunyi secara default */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      width: 80%;
+      max-width: 350px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      border-top: 8px solid; /* Garis warna status */
+    }
+
+    /* Styling untuk status sukses */
+    .modal-content.success {
+      border-color: #28a745;
+    }
+     .modal-content.success #modal-message {
+      color: #28a745;
+    }
+
+    /* Styling untuk status error */
+    .modal-content.error {
+      border-color: #dc3545;
+    }
+    .modal-content.error #modal-message {
+      color: #dc3545;
+    }
+
+    #modal-message {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 20px 0;
+    }
+
+    #modal-close-btn {
+      padding: 12px 25px;
+      border: none;
+      background: #007bff;
+      color: white;
       border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #modal-close-btn:hover {
+      background: #0056b3;
     }
 
-    .success {
-      color: #155724;
-      background: #d4edda;
-      border: 1px solid #c3e6cb;
-    }
-
-    .error {
-      color: #721c24;
-      background: #f8d7da;
-      border: 1px solid #f5c6cb;
-    }
   </style>
 </head>
 <body>
+  <!-- Konten Utama -->
   <div class="container">
     <h1>Absensi QR Code</h1>
-
     <label for="sesi">Pilih Sesi:</label>
     <select id="sesi">
       <option value="Registrasi">Registrasi</option>
@@ -83,18 +145,47 @@
       <option value="Sesi 4">Makrab</option>
       <option value="Sesi 5">Sesi 5</option>
     </select>
-
     <div id="reader"></div>
-    <div id="result"></div>
   </div>
- <script>
+
+  <!-- Pop-up (Modal) untuk notifikasi -->
+  <div id="modal" class="modal-overlay">
+    <div class="modal-content">
+      <p id="modal-message"></p>
+      <button id="modal-close-btn">Lanjut Scan</button>
+    </div>
+  </div>
+
+  <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbzNDnDyhJWyqa3Vsxdg74QQ4YwqFjDGKRSpKEsx4xt-nrwC_SDkoni5h19KbzbihpPR_A/exec";
-    const resultDiv = document.getElementById("result");
+    
+    // Ambil elemen-elemen modal
+    const modal = document.getElementById('modal');
+    const modalMessage = document.getElementById('modal-message');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const modalContent = modal.querySelector('.modal-content');
+
+    // Fungsi untuk menampilkan pop-up
+    function showModal(message, status) {
+      modalMessage.textContent = message;
+      // Hapus class sebelumnya, lalu tambahkan class baru (success/error)
+      modalContent.className = 'modal-content';
+      modalContent.classList.add(status); // status bisa 'success' atau 'error'
+      modal.style.display = 'flex';
+    }
+    
+    // Fungsi untuk menyembunyikan pop-up dan melanjutkan scan
+    function hideModal() {
+      modal.style.display = 'none';
+      html5QrCode.resume(); // Lanjutkan pemindaian
+    }
+
+    // Tambahkan event listener untuk tombol tutup di pop-up
+    modalCloseBtn.addEventListener('click', hideModal);
 
     function sendToAPI(nama, sesi) {
-      // Tampilkan pesan "mengirim"
-      resultDiv.className = ""; // Hapus class success/error sebelumnya
-      resultDiv.innerText = "Mengirim data...";
+      // Tampilkan pop-up loading
+      showModal('Mengirim data...', 'loading');
 
       const data = {
         nama: nama,
@@ -103,42 +194,24 @@
 
       fetch(apiUrl, {
         method: "POST",
-        // mode: 'no-cors', // Hapus atau jadikan komentar jika tidak diperlukan
         body: JSON.stringify(data),
         headers: {
-          "Content-Type": "text/plain;charset=utf-8", // Ganti ke text/plain agar tidak ada preflight request
+          "Content-Type": "text/plain;charset=utf-8",
         }
       })
       .then(res => res.json())
       .then(res => {
-        // Tampilkan pesan dari API
-        resultDiv.innerText = res.message;
-        if (res.status === "success") {
-          resultDiv.className = "success";
-        } else {
-          resultDiv.className = "error";
-        }
+        showModal(res.message, res.status); // Tampilkan hasil dari API di pop-up
       })
       .catch(err => {
-        resultDiv.innerText = "❌ Terjadi kesalahan: " + err;
-        resultDiv.className = "error";
+        showModal("❌ Terjadi kesalahan: " + err, 'error'); // Tampilkan error di pop-up
       });
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-      // Jangan tampilkan hasil scan mentah di sini agar tidak tertimpa pesan status
-      // resultDiv.innerText = `Hasil Scan: ${decodedText}`; 
-      
+      html5QrCode.pause(); // Jeda pemindaian agar tidak double scan
       const sesi = document.getElementById("sesi").value;
       sendToAPI(decodedText, sesi);
-
-      // Hentikan scan sejenak agar tidak double scan
-      html5QrCode.pause();
-      setTimeout(() => {
-        html5QrCode.resume();
-        resultDiv.innerText = ''; // Kosongkan pesan setelah beberapa detik
-        resultDiv.className = '';
-      }, 3000); // Jeda 3 detik
     }
 
     const html5QrCode = new Html5Qrcode("reader");
@@ -146,13 +219,13 @@
       { facingMode: "environment" },
       {
         fps: 10,
-        qrbox: { width: 250, height: 250 } // Lebih baik gunakan object untuk qrbox
+        qrbox: { width: 250, height: 250 }
       },
       onScanSuccess
     ).catch(err => {
       console.error("Gagal memulai kamera:", err);
-      resultDiv.innerText = "Gagal memulai kamera. Pastikan izin sudah diberikan.";
-      resultDiv.className = "error";
+      // Tampilkan error di pop-up jika kamera gagal diakses
+      showModal("Gagal memulai kamera. Pastikan izin sudah diberikan.", "error");
     });
   </script>
 </body>
