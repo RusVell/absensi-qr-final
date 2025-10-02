@@ -6,8 +6,18 @@
   <title>Absensi PENSI</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    /* CSS tidak berubah, jadi saya persingkat untuk kejelasan. */
-    html, body { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #fff5e1 0%, #ffc978 100%); display: flex; justify-content: center; align-items: center; }
+    /* === PERUBAHAN DI SINI === */
+    html, body { 
+      margin: 0; 
+      padding: 20px; /* Menambah jarak dari tepi layar */
+      height: 100%; 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      background: linear-gradient(135deg, #fff5e1 0%, #ffc978 100%); 
+      display: flex; 
+      justify-content: flex-start; /* Rata kiri */
+      align-items: flex-start; /* Rata atas */
+      box-sizing: border-box;
+    }
     .container { background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px; width: 90%; max-width: 450px; text-align: center; box-sizing: border-box; }
     h1 { margin-top: 0; font-size: 26px; font-weight: 700; color: #d95e1e; }
     #reader { width: 100%; margin: 20px auto; border: 2px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
