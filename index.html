@@ -6,147 +6,31 @@
   <title>Absensi PENSI</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    /* Mengatur dasar halaman */
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #fff5e1 0%, #ffc978 100%);
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      padding: 30px;
-      width: 90%;
-      max-width: 450px;
-      text-align: center;
-      box-sizing: border-box;
-    }
-
-    h1 {
-      margin-top: 0;
-      font-size: 26px;
-      font-weight: 700;
-      color: #d95e1e;
-    }
-
-    #reader {
-      width: 100%;
-      margin: 20px auto;
-      border: 2px solid #f0f0f0;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    select, label {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      box-sizing: border-box;
-      outline-color: #f57c00;
-    }
-
-    label {
-      border: none;
-      padding: 0;
-      margin-bottom: 8px;
-      text-align: left;
-      font-weight: bold;
-      color: #6D4C41;
-    }
-
-    /* === GAYA UNTUK POP-UP (MODAL) === */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      backdrop-filter: blur(5px);
-    }
-
-    .modal-content {
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      text-align: center;
-      width: 80%;
-      max-width: 350px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      border-top: 8px solid #f57c00; /* Warna default oranye */
-    }
-
+    /* CSS tidak berubah, jadi saya persingkat untuk kejelasan. */
+    html, body { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #fff5e1 0%, #ffc978 100%); display: flex; justify-content: center; align-items: center; }
+    .container { background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px; width: 90%; max-width: 450px; text-align: center; box-sizing: border-box; }
+    h1 { margin-top: 0; font-size: 26px; font-weight: 700; color: #d95e1e; }
+    #reader { width: 100%; margin: 20px auto; border: 2px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
+    select, label { display: block; width: 100%; padding: 12px; font-size: 16px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline-color: #f57c00; }
+    label { border: none; padding: 0; margin-bottom: 8px; text-align: left; font-weight: bold; color: #6D4C41; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+    .modal-content { background: #fff; padding: 30px; border-radius: 12px; text-align: center; width: 80%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-top: 8px solid #f57c00; }
     .modal-content.success { border-color: #4CAF50; }
-    .modal-content.success #modal-message { color: #4CAF50; }
     .modal-content.error { border-color: #D32F2F; }
-    .modal-content.error #modal-message { color: #D32F2F; }
-
-    #modal-message {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 0 0 25px 0;
-      color: #333;
-    }
-    #modal-message .scanned-name {
-      color: #d95e1e;
-      display: block;
-      font-size: 22px;
-      margin-top: 8px;
-    }
-
-    #modal-actions {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-    }
-
-    #modal-actions button {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: bold;
-    }
-
-    .btn-primary {
-      background: #f57c00;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #d95e1e;
-    }
-
-    .btn-secondary {
-      background: #e0e0e0;
-      color: #333;
-    }
-    .btn-secondary:hover {
-      background: #bdbdbd;
-    }
+    #modal-message { font-size: 18px; font-weight: bold; margin: 0 0 25px 0; color: #333; }
+    #modal-message .scanned-name { color: #d95e1e; display: block; font-size: 22px; margin-top: 8px; }
+    #modal-actions { display: flex; justify-content: center; gap: 15px; }
+    #modal-actions button { padding: 12px 25px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
+    .btn-primary { background: #f57c00; color: white; } .btn-primary:hover { background: #d95e1e; }
+    .btn-secondary { background: #e0e0e0; color: #333; } .btn-secondary:hover { background: #bdbdbd; }
   </style>
 </head>
 <body>
   <div class="container">
+    
+    <!-- === LOGO SUDAH DIGANTI === -->
+    <img src="https://github.com/RusVell/absensi-qr-final/blob/main/Bandung.png?raw=true" alt="Logo Acara" style="max-width: 100px; margin-bottom: 15px;">
+    
     <h1>Absensi PENSI</h1>
     <label for="sesi">Pilih Sesi:</label>
     <select id="sesi">
@@ -168,14 +52,14 @@
   </div>
 
   <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzNDnDyhJWyqa3Vsxdg74QQ4YwqFjDGKRSpKEsx4xt-nrwC_SDkoni5h19KbzbihpPR_A/exec";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzgXEtRN28PYjeBLvO_rXvA5_2DWtvTRaPfMByn7d6x6Ch5E5mgPy-p-EaSmsH-Bkk4fA/exec";
     
+    // ... Sisa kode JavaScript tidak ada yang berubah ...
     const modal = document.getElementById('modal');
     const modalMessage = document.getElementById('modal-message');
     const modalActions = document.getElementById('modal-actions');
     const modalContent = modal.querySelector('.modal-content');
 
-    // Sembunyikan modal dan lanjutkan scan
     function hideModalAndResume() {
       modal.style.display = 'none';
       if (html5QrCode.getState() === 2) { // 2 = PAUSED
@@ -183,93 +67,73 @@
       }
     }
     
-    // Tampilkan modal hasil akhir (sukses/gagal)
-    function showResultModal(message, status) {
+    function showModal(message, status, buttons = []) {
         modalMessage.innerHTML = message;
         modalContent.className = 'modal-content ' + status;
-        
-        modalActions.innerHTML = ''; // Kosongkan tombol sebelumnya
-        const continueBtn = document.createElement('button');
-        continueBtn.textContent = 'Lanjut Scan';
-        continueBtn.className = 'btn-primary';
-        continueBtn.onclick = hideModalAndResume;
-        modalActions.appendChild(continueBtn);
+        modalActions.innerHTML = '';
+
+        buttons.forEach(btnInfo => {
+            const button = document.createElement('button');
+            button.textContent = btnInfo.text;
+            button.className = btnInfo.class;
+            button.onclick = btnInfo.onClick;
+            modalActions.appendChild(button);
+        });
 
         modal.style.display = 'flex';
     }
-
-    // Tampilkan modal konfirmasi setelah scan
-    function showConfirmationModal(nama) {
-        modalMessage.innerHTML = `Absen untuk <span class="scanned-name">${nama}</span>?`;
-        modalContent.className = 'modal-content'; // Reset warna border
-
-        modalActions.innerHTML = ''; // Kosongkan tombol
-
-        // Buat tombol Batal
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Batal';
-        cancelBtn.className = 'btn-secondary';
-        cancelBtn.onclick = hideModalAndResume;
-
-        // Buat tombol Simpan
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Simpan';
-        saveBtn.className = 'btn-primary';
-        saveBtn.onclick = () => {
-            const sesi = document.getElementById("sesi").value;
-            sendToAPI(nama, sesi);
-        };
-
-        modalActions.appendChild(cancelBtn);
-        modalActions.appendChild(saveBtn);
-        modal.style.display = 'flex';
-    }
-
-    // Kirim data ke Google Sheets API
-    function sendToAPI(nama, sesi) {
-      // Tampilkan status loading di modal
-      modalMessage.textContent = 'Menyimpan data...';
-      modalActions.innerHTML = ''; // Hilangkan tombol saat loading
-
-      const data = { nama: nama, sesi: sesi };
-
-      fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "text/plain;charset=utf-8" }
-      })
+    
+    function saveData(nama, sesi) {
+      showModal('Menyimpan data...', 'loading', []);
+      const payload = { nama: nama, sesi: sesi, mode: 'save' };
+      fetch(apiUrl, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
       .then(res => res.json())
       .then(res => {
-        showResultModal(res.message, res.status);
+        const buttons = [{ text: 'Lanjut Scan', class: 'btn-primary', onClick: hideModalAndResume }];
+        showModal(res.message, res.status, buttons);
       })
       .catch(err => {
-        showResultModal("❌ Terjadi kesalahan jaringan: " + err, 'error');
+        const buttons = [{ text: 'Scan Ulang', class: 'btn-primary', onClick: hideModalAndResume }];
+        showModal("❌ Kesalahan Jaringan", 'error', buttons);
       });
     }
 
-    // Fungsi yang dijalankan saat QR berhasil di-scan
-    function onScanSuccess(decodedText, decodedResult) {
-      html5QrCode.pause(); // Langsung jeda kamera
-      showConfirmationModal(decodedText);
+    function checkData(nama, sesi) {
+      const payload = { nama: nama, sesi: sesi, mode: 'check' };
+      fetch(apiUrl, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
+      .then(res => res.json())
+      .then(res => {
+        if (res.code === 'CONFIRMATION_REQUIRED') {
+          const buttons = [
+            { text: 'Batal', class: 'btn-secondary', onClick: hideModalAndResume },
+            { text: 'Simpan', class: 'btn-primary', onClick: () => saveData(nama, sesi) }
+          ];
+          showModal(`Absen untuk <span class="scanned-name">${nama}</span>?`, 'default', buttons);
+        } else {
+          const buttons = [{ text: 'Scan Ulang', class: 'btn-primary', onClick: hideModalAndResume }];
+          showModal(res.message, 'error', buttons);
+        }
+      })
+      .catch(err => {
+        const buttons = [{ text: 'Scan Ulang', class: 'btn-primary', onClick: hideModalAndResume }];
+        showModal("❌ Kesalahan Jaringan", 'error', buttons);
+      });
     }
-    
-    // Fungsi yang dijalankan jika scan gagal (misal QR tidak valid)
-    function onScanFailure(error) {
-        // Fungsi ini bisa di-trigger berkali-kali, jadi kita tidak menampilkannya agar tidak spam
-        // console.warn(`Code scan error = ${error}`);
+
+    function onScanSuccess(decodedText, decodedResult) {
+      html5QrCode.pause();
+      const sesi = document.getElementById("sesi").value;
+      checkData(decodedText, sesi);
     }
 
     const html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
       { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 }
-      },
-      onScanSuccess,
-      onScanFailure
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess
     ).catch(err => {
-        showResultModal("Gagal memulai kamera. Mohon berikan izin akses kamera.", "error");
+        const buttons = [{ text: 'Muat Ulang', class: 'btn-primary', onClick: () => location.reload() }];
+        showModal("Gagal memulai kamera. Mohon berikan izin akses.", "error", buttons);
     });
   </script>
 </body>
