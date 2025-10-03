@@ -110,10 +110,11 @@
       modal.style.display = 'flex';
 
       fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }, // Kirim sebagai JSON
-      })
+     method: "POST",
+     body: JSON.stringify(data),
+     // CUKUP UBAH MENJADI "text/plain"
+     headers: { "Content-Type": "text/plain;charset=utf-8" },
+   })
       .then(res => res.json())
       .then(res => {
         // Logika setelah menerima balasan dari backend
@@ -199,4 +200,5 @@
   </script>
 </body>
 </html>
+
 
