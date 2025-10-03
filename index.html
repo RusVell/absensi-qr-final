@@ -6,7 +6,6 @@
   <title>Absensi PENSI</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    /* CSS tidak diubah, sudah bagus */
     html, body {
       margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
@@ -157,24 +156,19 @@
       modalActions.appendChild(continueBtn);
     }
     
-   // CARI FUNGSI INI DI KODEMU, LALU HAPUS DAN GANTI DENGAN VERSI DI BAWAH
-
-async function hideModalAndResume() {
-  modal.style.display = 'none';
-  try {
-    const scannerState = html5QrCode.getState();
-    if (scannerState === 2 || scannerState === 3) { // 2=SCANNING, 3=PAUSED
-      await html5QrCode.stop();
+    async function hideModalAndResume() {
+      modal.style.display = 'none';
+      try {
+        const scannerState = html5QrCode.getState();
+        if (scannerState === 2 || scannerState === 3) { // 2=SCANNING, 3=PAUSED
+          await html5QrCode.stop();
+        }
+        initializeScanner();
+      } catch (err) {
+        console.error("Gagal memulai ulang kamera:", err);
+        showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
+      }
     }
-    // PERBAIKAN: Panggil 'initializeScanner' lagi agar logika pemilihan kamera berjalan
-    initializeScanner();
-  } catch (err) {
-    console.error("Gagal memulai ulang kamera:", err);
-    showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
-  }
-}
-
-
     
     function startScanner(deviceId) {
       const constraints = {
@@ -223,4 +217,3 @@ async function hideModalAndResume() {
   </script>
 </body>
 </html>
-
