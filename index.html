@@ -225,7 +225,7 @@ Html5Qrcode.getCameras().then(devices => {
     if (backCameras.length > 0) {
       // Jika ada lebih dari satu kamera belakang, pilih yang terakhir
       // (biasanya ini adalah kamera utama, bukan ultra-wide)
-      selectedCameraId = backCameras[0].id;
+      selectedCameraId = backCameras[backCameras.length].id;
       console.log("Memilih kamera belakang utama: " + selectedCameraId);
     } else {
       // Jika tidak ada kamera 'back', gunakan saja kamera pertama yang ada
@@ -243,6 +243,7 @@ Html5Qrcode.getCameras().then(devices => {
   </script>
 </body>
 </html>
+
 
 
 
