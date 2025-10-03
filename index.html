@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +5,7 @@
   <title>Absensi PENSI</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
+    /* CSS tidak diubah, sudah bagus */
     html, body {
       margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
@@ -25,15 +25,7 @@
       padding: 30px; width: 90%; max-width: 450px; text-align: center; box-sizing: border-box; z-index: 1; backdrop-filter: blur(5px);
     }
     h1 { margin-top: 0; font-size: 26px; font-weight: 700; color: #d95e1e; }
-    #reader {
-      width: 100%;
-      margin: 20px auto;
-      border: 2px solid #f0f0f0;
-      border-radius: 12px;
-      overflow: hidden;
-      /* INI ADALAH PERBAIKAN KUNCI AGAR KAMERA MUNCUL */
-      aspect-ratio: 1 / 1;
-    }
+    #reader { width: 100%; margin: 20px auto; border: 2px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
     select, label {
       display: block; width: 100%; padding: 12px; font-size: 16px; margin-bottom: 20px;
       border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline-color: #f57c00;
@@ -71,9 +63,9 @@
     <select id="sesi">
       <option value="Registrasi">Registrasi</option>
       <option value="Sesi 1">Sesi 1</option>
-      <option value="Laurentius">Laurentius</option>
+      <option value="Sesi 2">Laurentius</option>
       <option value="Sesi 3">Sesi 3</option>
-      <option value="Makrab">Makrab</option>
+      <option value="Sesi 4">Makrab</option>
       <option value="Sesi 5">Sesi 5</option>
     </select>
     <div id="reader"></div>
@@ -95,26 +87,36 @@
     const modalContent = modal.querySelector('.modal-content');
     const sesiDropdown = document.getElementById('sesi');
     
+    // Inisialisasi scanner dengan nama variabel yang konsisten
     const html5QrCode = new Html5Qrcode("reader");
 
+    // FUNGSI UTAMA KETIKA SCAN BERHASIL
     function onScanSuccess(decodedText, decodedResult) {
+      // 1. Langsung jeda scanner agar tidak memindai berulang kali
       html5QrCode.pause(true);
+
+      // 2. Ambil sesi yang dipilih
       const sesi = sesiDropdown.value;
+
+      // 3. Kirim data untuk dicek ke backend
       sendToAPI({ mode: 'check', nama: decodedText, sesi: sesi });
     }
     
+    // FUNGSI UNTUK MENGIRIM DATA KE GOOGLE APPS SCRIPT
     function sendToAPI(data) {
       modalMessage.textContent = 'Memproses...';
       modalActions.innerHTML = '';
       modal.style.display = 'flex';
 
       fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-      })
+     method: "POST",
+     body: JSON.stringify(data),
+     // CUKUP UBAH MENJADI "text/plain"
+     headers: { "Content-Type": "text/plain;charset=utf-8" },
+   })
       .then(res => res.json())
       .then(res => {
+        // Logika setelah menerima balasan dari backend
         if (data.mode === 'check') {
           if (res.code === 'CONFIRMATION_REQUIRED') {
             showConfirmationModal(data.nama, data.sesi);
@@ -131,6 +133,7 @@
       });
     }
 
+    // FUNGSI UNTUK MENAMPILKAN MODAL KONFIRMASI (Simpan / Batal)
     function showConfirmationModal(nama, sesi) {
       modalMessage.innerHTML = `Absen untuk <span class="scanned-name">${nama}</span>?`;
       modalContent.className = 'modal-content';
@@ -152,6 +155,7 @@
       modalActions.appendChild(saveBtn);
     }
     
+    // FUNGSI UNTUK MENAMPILKAN MODAL HASIL AKHIR (Sukses / Error)
     function showResultModal(message, status) {
       modalMessage.innerHTML = message;
       modalContent.className = 'modal-content ' + status;
@@ -164,30 +168,31 @@
       modalActions.appendChild(continueBtn);
     }
     
-    async function hideModalAndResume() {
-      modal.style.display = 'none';
-      try {
-        const scannerState = html5QrCode.getState();
-        if (scannerState === 2 || scannerState === 3) { // 2=SCANNING, 3=PAUSED
-          await html5QrCode.stop();
-        }
-        initializeScanner();
-      } catch (err) {
-        console.error("Gagal memulai ulang kamera:", err);
-        showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
-      }
+    // GANTI FUNGSI LAMA DENGAN YANG INI
+async function hideModalAndResume() {
+  modal.style.display = 'none';
+  try {
+    // Ambil status scanner saat ini
+    const scannerState = html5QrCode.getState();
+
+    // PERBAIKAN: Cek apakah statusnya SCANNING (2) ATAU PAUSED (3)
+    // Jika ya, matikan dulu scanner-nya agar bersih
+    if (scannerState === 2 || scannerState === 3) {
+      await html5QrCode.stop();
     }
     
-    function startScanner(deviceId) {
-      const constraints = {
-        facingMode: "environment" 
-      };
-      if (deviceId) {
-        constraints.deviceId = { exact: deviceId };
-      }
-
+    // Setelah dipastikan mati, baru nyalakan lagi dari awal
+    startScanner();
+  } catch (err) {
+    console.error("Gagal memulai ulang kamera:", err);
+    showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
+  }
+}
+    
+    // FUNGSI UNTUK MEMULAI SCANNER
+    function startScanner() {
       html5QrCode.start(
-        constraints,
+        { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         onScanSuccess,
         (errorMessage) => { /* Abaikan error */ }
@@ -196,32 +201,8 @@
       });
     }
 
-    function initializeScanner() {
-      Html5Qrcode.getCameras().then(devices => {
-        console.log("Kamera yang terdeteksi:", devices);
-        if (devices && devices.length) {
-          let selectedCameraId;
-          const backCameras = devices.filter(device => 
-            device.label.toLowerCase().includes('back')
-          );
-          if (backCameras.length > 0) {
-            selectedCameraId = backCameras[0].id;
-          } else {
-            selectedCameraId = devices[0].id;
-          }
-          startScanner(selectedCameraId);
-        } else {
-          console.error("Tidak ada kamera yang ditemukan.");
-          showResultModal("Tidak ada kamera yang terdeteksi di perangkat ini.", "error");
-        }
-      }).catch(err => {
-        console.error("Gagal mendapatkan daftar kamera:", err);
-        startScanner(); 
-      });
-    }
-
-    // Mulai semuanya saat halaman dibuka
-    initializeScanner();
+    // MULAI SCANNER SAAT HALAMAN PERTAMA KALI DIBUKA
+    startScanner();
   </script>
 </body>
 </html>
