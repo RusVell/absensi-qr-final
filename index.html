@@ -169,19 +169,26 @@
       modalActions.appendChild(continueBtn);
     }
     
-    // FUNGSI UNTUK MERESTART SCANNER (lebih andal menggunakan stop & start)
-    async function hideModalAndResume() {
-      modal.style.display = 'none';
-      try {
-        if (html5QrCode.getState() === 2) { // 2 = PAUSED
-          await html5QrCode.stop();
-        }
-        startScanner();
-      } catch (err) {
-        console.error("Gagal memulai ulang kamera:", err);
-        showResultModal("Gagal memulai ulang kamera.", "error");
-      }
+    // GANTI FUNGSI LAMA DENGAN YANG INI
+async function hideModalAndResume() {
+  modal.style.display = 'none';
+  try {
+    // Ambil status scanner saat ini
+    const scannerState = html5QrCode.getState();
+
+    // PERBAIKAN: Cek apakah statusnya SCANNING (2) ATAU PAUSED (3)
+    // Jika ya, matikan dulu scanner-nya agar bersih
+    if (scannerState === 2 || scannerState === 3) {
+      await html5QrCode.stop();
     }
+    
+    // Setelah dipastikan mati, baru nyalakan lagi dari awal
+    startScanner();
+  } catch (err) {
+    console.error("Gagal memulai ulang kamera:", err);
+    showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
+  }
+}
     
     // FUNGSI UNTUK MEMULAI SCANNER
     function startScanner() {
@@ -200,5 +207,6 @@
   </script>
 </body>
 </html>
+
 
 
