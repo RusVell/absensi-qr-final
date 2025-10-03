@@ -88,36 +88,26 @@
     const modalContent = modal.querySelector('.modal-content');
     const sesiDropdown = document.getElementById('sesi');
     
-    // Inisialisasi scanner dengan nama variabel yang konsisten
     const html5QrCode = new Html5Qrcode("reader");
 
-    // FUNGSI UTAMA KETIKA SCAN BERHASIL
     function onScanSuccess(decodedText, decodedResult) {
-      // 1. Langsung jeda scanner agar tidak memindai berulang kali
       html5QrCode.pause(true);
-
-      // 2. Ambil sesi yang dipilih
       const sesi = sesiDropdown.value;
-
-      // 3. Kirim data untuk dicek ke backend
       sendToAPI({ mode: 'check', nama: decodedText, sesi: sesi });
     }
     
-    // FUNGSI UNTUK MENGIRIM DATA KE GOOGLE APPS SCRIPT
     function sendToAPI(data) {
       modalMessage.textContent = 'Memproses...';
       modalActions.innerHTML = '';
       modal.style.display = 'flex';
 
       fetch(apiUrl, {
-     method: "POST",
-     body: JSON.stringify(data),
-     // CUKUP UBAH MENJADI "text/plain"
-     headers: { "Content-Type": "text/plain;charset=utf-8" },
-   })
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+      })
       .then(res => res.json())
       .then(res => {
-        // Logika setelah menerima balasan dari backend
         if (data.mode === 'check') {
           if (res.code === 'CONFIRMATION_REQUIRED') {
             showConfirmationModal(data.nama, data.sesi);
@@ -134,7 +124,6 @@
       });
     }
 
-    // FUNGSI UNTUK MENAMPILKAN MODAL KONFIRMASI (Simpan / Batal)
     function showConfirmationModal(nama, sesi) {
       modalMessage.innerHTML = `Absen untuk <span class="scanned-name">${nama}</span>?`;
       modalContent.className = 'modal-content';
@@ -156,7 +145,6 @@
       modalActions.appendChild(saveBtn);
     }
     
-    // FUNGSI UNTUK MENAMPILKAN MODAL HASIL AKHIR (Sukses / Error)
     function showResultModal(message, status) {
       modalMessage.innerHTML = message;
       modalContent.className = 'modal-content ' + status;
@@ -169,37 +157,70 @@
       modalActions.appendChild(continueBtn);
     }
     
-    // GANTI FUNGSI LAMA DENGAN YANG INI
-async function hideModalAndResume() {
-  modal.style.display = 'none';
-  try {
-    // Ambil status scanner saat ini
-    const scannerState = html5QrCode.getState();
-
-    // PERBAIKAN: Cek apakah statusnya SCANNING (2) ATAU PAUSED (3)
-    // Jika ya, matikan dulu scanner-nya agar bersih
-    if (scannerState === 2 || scannerState === 3) {
-      await html5QrCode.stop();
-    }
-    
-    // Setelah dipastikan mati, baru nyalakan lagi dari awal
-    startScanner();
-  } catch (err) {
-    console.error("Gagal memulai ulang kamera:", err);
-    showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
-  }
+    async function hideModalAndResume() {
+  modal.style.display = 'none';
+  try {
+    // Ambil status scanner saat ini
+    const scannerState = html5QrCode.getState();
+    // PERBAIKAN: Cek apakah statusnya SCANNING (2) ATAU PAUSED (3)
+    // Jika ya, matikan dulu scanner-nya agar bersih
+    if (scannerState === 2 || scannerState === 3) {
+      await html5QrCode.stop();
+    }
+    // Setelah dipastikan mati, baru nyalakan lagi dari awal
+    startScanner();
+  } catch (err) {
+    console.error("Gagal memulai ulang kamera:", err);
+    showResultModal("Gagal memulai ulang kamera, silakan refresh.", "error");
+  }
 }
+
+
     
-<!DOCTYPE html>
+    function startScanner(deviceId) {
+      const constraints = {
+        facingMode: "environment" 
+      };
+      if (deviceId) {
+        constraints.deviceId = { exact: deviceId };
+      }
+
+      html5QrCode.start(
+        constraints,
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        (errorMessage) => { /* Abaikan error */ }
+      ).catch(err => {
+        showResultModal("Gagal memulai kamera. Mohon berikan izin akses kamera.", "error");
+      });
+    }
+
+    function initializeScanner() {
+      Html5Qrcode.getCameras().then(devices => {
+        console.log("Kamera yang terdeteksi:", devices);
+        if (devices && devices.length) {
+          let selectedCameraId;
+          const backCameras = devices.filter(device => 
+            device.label.toLowerCase().includes('back')
+          );
+          if (backCameras.length > 0) {
+            selectedCameraId = backCameras[0].id;
+          } else {
+            selectedCameraId = devices[0].id;
+          }
+          startScanner(selectedCameraId);
+        } else {
+          console.error("Tidak ada kamera yang ditemukan.");
+          showResultModal("Tidak ada kamera yang terdeteksi di perangkat ini.", "error");
+        }
+      }).catch(err => {
+        console.error("Gagal mendapatkan daftar kamera:", err);
+        startScanner(); 
+      });
+    }
+
+    // Mulai semuanya saat halaman dibuka
+    initializeScanner();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
