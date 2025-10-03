@@ -271,14 +271,50 @@
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-      html5QrCode.pause();
-      const sesi = document.getElementById("sesi").value;
-      sendToAPI({ mode: 'check', nama: decodedText, sesi: sesi });
+  // Hentikan scanner dulu agar tidak memindai terus-menerus
+  html5QrcodeScanner.pause(); 
+
+  // Kirim data 'decodedText' ke Google Apps Script Anda via fetch
+  fetch(urlApiGoogle, {
+    method: 'POST',
+    body: JSON.stringify({ mode: 'save', nama: decodedText, sesi: 'Sesi 1' }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      // Tampilkan popup sukses
+      document.getElementById('popup-sukses').style.display = 'block';
+      document.getElementById('pesan-sukses').innerText = data.message;
+      
+      // Ketika tombol "Lanjut Scan" di popup diklik
+      document.getElementById('tombol-lanjut-scan').onclick = function() {
+        // Sembunyikan popup
+        document.getElementById('popup-sukses').style.display = 'none';
+        
+        // ==> INILAH SOLUSINYA: AKTIFKAN KEMBALI SCANNER <==
+        html5QrcodeScanner.resume(); 
+      };
+
+    } else {
+      // Tangani jika ada error dari backend (misal: sudah absen)
+      alert(data.message);
+      html5QrcodeScanner.resume(); // Nyalakan lagi juga jika error
     }
+  })
+  .catch(error => {
+    // Nah, pesan "Kesalahan Jaringan" kamu muncul dari sini
+    console.error('Error:', error);
+    alert('Terjadi kesalahan jaringan. Coba lagi.');
+    
+    // Coba nyalakan lagi scanner-nya setelah error
+    html5QrcodeScanner.resume(); 
+  });
+}
     
     // --- PERUBAHAN 3: Panggil fungsi startScanner saat halaman dimuat ---
     startScanner();
   </script>
 </body>
 </html>
+
 
