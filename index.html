@@ -190,59 +190,11 @@ async function hideModalAndResume() {
   }
 }
     
-    // FUNGSI UNTUK MEMULAI SCANNER
-    function startScanner(deviceId) {
-  // Konfigurasi awal untuk meminta kamera belakang sebagai default
-  const constraints = {
-    facingMode: "environment" 
-  };
-  
-  // Jika kita mendapatkan ID kamera spesifik, gunakan itu
-  if (deviceId) {
-    constraints.deviceId = { exact: deviceId };
-  }
-
-  html5QrCode.start(
-    constraints, // Gunakan konfigurasi yang sudah kita siapkan
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    onScanSuccess,
-    (errorMessage) => { /* Abaikan error */ }
-  ).catch(err => {
-    showResultModal("Gagal memulai kamera. Mohon berikan izin akses kamera.", "error");
-  });
-}
-Html5Qrcode.getCameras().then(devices => {
-  console.log("Kamera yang terdeteksi:", devices);
-  
-  if (devices && devices.length) {
-    // Filter untuk mencari kamera yang ada tulisan 'back' (belakang)
-    const backCameras = devices.filter(device => 
-      device.label.toLowerCase().includes('back')
-    );
-    
-    let selectedCameraId;
-    
-    if (backCameras.length > 0) {
-      // Jika ada lebih dari satu kamera belakang, pilih yang terakhir
-      // (biasanya ini adalah kamera utama, bukan ultra-wide)
-      selectedCameraId = backCameras[backCameras.length-1].id;
-      console.log("Memilih kamera belakang utama: " + selectedCameraId);
-    } else {
-      // Jika tidak ada kamera 'back', gunakan saja kamera pertama yang ada
-      selectedCameraId = devices[0].id;
-    }
-    
-    // Jalankan scanner dengan ID kamera yang sudah dipilih
-    startScanner(selectedCameraId);
-  }
-}).catch(err => {
-  console.error("Gagal mendapatkan daftar kamera:", err);
-  // Jika gagal mendeteksi, jalankan scanner dengan cara lama (default)
-  startScanner();
-});
+<!DOCTYPE html>
   </script>
 </body>
 </html>
+
 
 
 
